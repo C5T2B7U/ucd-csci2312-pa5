@@ -1,6 +1,9 @@
 //
 // Created by Ivo Georgiev on 5/3/16.
 //
+// Modified by Brian Sumer on 5/12/16.
+//
+
 
 #ifndef UCD_CSCI2312_PA5_IMPL_CUSTOM_ITERATOR_H
 #define UCD_CSCI2312_PA5_IMPL_CUSTOM_ITERATOR_H
@@ -35,13 +38,25 @@ namespace CS2312 {
             typedef std::forward_iterator_tag iterator_category;
             typedef size_type difference_type;
 
-            iterator(pointer ptr);
-            self_type operator++();
-            self_type operator++(int junk);
-            reference operator*();
-            pointer operator->();
-            bool operator==(const self_type& rhs) const;
-            bool operator!=(const self_type& rhs) const;
+            iterator(pointer ptr) : __ptr(ptr) {}
+
+            self_type operator++()
+			{
+				++__ptr;
+				return *this;
+			}
+
+            self_type operator++(int junk)
+			{
+				auto save(*this);
+				++__ptr;
+				return save;
+			}
+
+            reference operator*() {return *__ptr;}
+            pointer operator->() {return __ptr;}
+            bool operator==(const self_type& rhs) const {return (__ptr == rhs.__ptr);}
+            bool operator!=(const self_type& rhs) const {return (__ptr != rhs.__ptr);}
 
         private:
 
@@ -60,13 +75,25 @@ namespace CS2312 {
             typedef std::forward_iterator_tag iterator_category;
             typedef size_type difference_type;
 
-            const_iterator(pointer ptr);
-            self_type operator++();
-            self_type operator++(int junk);
-            const value_type& operator*() const;
-            const value_type* operator->() const;
-            bool operator==(const self_type& rhs) const;
-            bool operator!=(const self_type& rhs) const;
+            const_iterator(pointer ptr) : __ptr(ptr) {}
+
+            self_type operator++()
+			{
+				++__ptr;
+				return *this;
+			}
+
+			self_type operator++(int junk)
+			{
+				auto save(*this);
+				++__ptr;
+				return save;
+			}
+
+            const value_type& operator*() const {return *__ptr;}
+            const value_type* operator->() const {return __ptr;}
+            bool operator==(const self_type& rhs) const {return (__ptr == rhs.__ptr);}
+            bool operator!=(const self_type& rhs) const {return (__ptr != rhs.__ptr);}
 
         private:
 
@@ -75,25 +102,38 @@ namespace CS2312 {
         };
 
 
-        fixed_array(size_type size);
+        fixed_array(size_type size) : __size(size) { __data = new T[size];}
 
-        fixed_array(std::initializer_list<T> list);
+        fixed_array(std::initializer_list<T> list)
+		{
 
-        ~fixed_array();
+			__data = new T[list.size()];
 
-        size_type size() const;
+			std::copy(list.begin(), list.end(), __data);
+		}
 
-        T& operator[](size_type index);
+        ~fixed_array()
+		{
 
-        const T& operator[](size_type index) const;
+			if (__data != nullptr)
+			delete __data;
 
-        iterator begin();
+			__data = nullptr;
+		}
 
-        iterator end();
+        size_type size() const {return __size;}
 
-        const_iterator begin() const;
+        T& operator[](size_type index) {return __data[index];}
 
-        const_iterator end() const;
+        const T& operator[](size_type index) const {return __data[index];}
+
+        iterator begin() {return iterator(__data);}
+
+        iterator end() {return iterator(__data + __size);}
+
+        const_iterator begin() const {return const_iterator(__data);}
+
+        const_iterator end() const {return const_iterator(__data + __size);}
 
     private:
 
